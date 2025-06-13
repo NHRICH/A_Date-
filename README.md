@@ -29,18 +29,6 @@ This was created as part of an emotional reel where the journey begins with a fe
 
 ---
 
-## Screenshots:
-
-1. **Loader Page**
-   ![Screenshot 1](./public/ss1.png)
-
-2. **Countdown Page**
-   ![Screenshot 2](./public/ss2.png)
-
-3. **Happy Birthday Message Screen**
-   ![Screenshot 3](./public/ss3.png)
-
----
 
 ## 🛠️ Built With
 
