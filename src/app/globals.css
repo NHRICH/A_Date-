@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Candle flicker overlay */
+@keyframes candleFlicker {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+  80% { opacity: 0.6; }
+}
+.flicker-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 40%, rgba(255,199,143,0.15) 0%, rgba(0,0,0,0) 60%);
+  animation: candleFlicker 2s infinite ease-in-out;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -19,8 +34,23 @@
   }
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Lato:wght@300;400;700&display=swap');
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Shantell Sans", cursive;
+  font-family: 'Inter', sans-serif;
+}
+
+.romantic-text {
+  font-family: 'Dancing Script', cursive;
+  font-weight: 700;
+}
+
+.font-cormorant {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-lato {
+  font-family: 'Lato', sans-serif;
 }

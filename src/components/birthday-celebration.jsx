@@ -4,17 +4,174 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Sparkles, ArrowRight } from 'lucide-react';
 
+// Floating Hearts Component
+const FloatingHearts = () => {
+  const [hearts, setHearts] = useState([]);
+
+  useEffect(() => {
+    const colors = [
+      "text-pink-500",
+      "text-pink-400",
+      "text-pink-300",
+      "text-red-400",
+      "text-purple-400",
+      "text-purple-300",
+    ];
+
+    const fills = ["fill-pink-200", "fill-pink-100", "fill-red-100", "fill-purple-100"];
+
+    const newHearts = Array.from({ length: 12 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 16 + Math.random() * 24,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      fill: fills[Math.floor(Math.random() * fills.length)],
+      duration: 10 + Math.random() * 20,
+      delay: Math.random() * 5,
+    }));
+
+    setHearts(newHearts);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-10">
+      {hearts.map((heart) => (
+        <motion.div
+          key={heart.id}
+          className="absolute"
+          style={{
+            left: `${heart.x}%`,
+            top: `${heart.y}%`,
+          }}
+          animate={{
+            y: [0, -120, 0],
+            x: [0, 10, -10, 0],
+            scale: [1, 1.1, 1],
+            opacity: [0.7, 1, 0.7],
+          }}
+          transition={{
+            duration: heart.duration,
+            delay: heart.delay,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+        >
+          <Heart className={`w-${Math.round(heart.size)} h-${Math.round(heart.size)} ${heart.color} ${heart.fill} opacity-70`} />
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+// Confetti Component
+const Confetti = () => {
+  const [confetti, setConfetti] = useState([]);
+  const [isActive, setIsActive] = useState(false);
+
+  // Function to trigger confetti
+  const triggerConfetti = () => {
+    if (isActive) return; // Prevent multiple triggers
+    setIsActive(true);
+    
+    const colors = [
+      "bg-rose-500",
+      "bg-purple-500",
+      "bg-yellow-400",
+      "bg-blue-400",
+      "bg-green-400",
+      "bg-red-400",
+      "bg-pink-300",
+      "bg-purple-300",
+    ];
+
+    const shapes = ["rounded-full", "rounded", "rounded-sm", "heart-shape"];
+
+    const newConfetti = Array.from({ length: 70 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: -10 - Math.random() * 10,
+      size: 5 + Math.random() * 10,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      shape: shapes[Math.floor(Math.random() * shapes.length)],
+      duration: 3 + Math.random() * 5,
+      delay: Math.random() * 5,
+    }));
+
+    setConfetti(newConfetti);
+
+    // Auto-clear confetti after animation
+    const timer = setTimeout(() => {
+      setConfetti([]);
+      setIsActive(false);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  };
+
+  // Expose the trigger function to parent
+  useEffect(() => {
+    window.triggerConfetti = triggerConfetti;
+    return () => {
+      delete window.triggerConfetti;
+    };
+  }, [isActive]);
+
+  if (!isActive) return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-10">
+      {confetti.map((piece) => (
+        <motion.div
+          key={piece.id}
+          className={`absolute ${piece.color} ${piece.shape === "heart-shape" ? "heart" : piece.shape}`}
+          style={{
+            left: `${piece.x}%`,
+            top: `${piece.y}%`,
+            width: piece.size,
+            height: piece.size,
+          }}
+          animate={{
+            y: ["0vh", "110vh"],
+            x: [
+              `${piece.x}%`,
+              `${piece.x + (Math.random() * 20 - 10)}%`,
+              `${piece.x + (Math.random() * 20 - 10)}%`,
+              `${piece.x + (Math.random() * 20 - 10)}%`,
+            ],
+            rotate: [0, 360 * (Math.random() > 0.5 ? 1 : -1)],
+          }}
+          transition={{
+            duration: piece.duration,
+            delay: piece.delay,
+            ease: "linear",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const ConfettiTrigger = ({ trigger }) => {
+  useEffect(() => {
+    if (trigger && typeof window !== 'undefined' && window.triggerConfetti) {
+      window.triggerConfetti();
+    }
+  }, [trigger]);
+
+  return <Confetti />;
+};
+
 export default function CelebrationPhase() {
   const [isCardOpen, setIsCardOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(null);
   const [petals, setPetals] = useState([]);
-  const [isMuted, setIsMuted] = useState(true);
-  const [hasInteracted, setHasInteracted] = useState(false);
-  const audioRef = useRef(null);
+  const [showReminderPopup, setShowReminderPopup] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showHearts, setShowHearts] = useState(true); // Always show floating hearts in the background
 
-  // Initialize audio and create petals
+  // Create falling petals
   useEffect(() => {
-    // Create falling petals
     const createPetals = () => {
       const newPetals = [];
       const petalCount = 30;
@@ -34,43 +191,6 @@ export default function CelebrationPhase() {
     };
 
     createPetals();
-
-    // Only initialize audio on the client side
-    if (typeof window !== 'undefined') {
-      audioRef.current = new Audio('/romantic-instrumental.mp3');
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.2; // 20% volume
-      
-      // Try to start playing on user interaction
-      const handleFirstInteraction = () => {
-        if (audioRef.current) {
-          audioRef.current.play().catch(e => {
-            console.log("Initial autoplay prevented, will try again on button click");
-          });
-          window.removeEventListener('click', handleFirstInteraction);
-          window.removeEventListener('touchstart', handleFirstInteraction);
-        }
-      };
-      
-      // Try to start playing immediately (may be blocked by browser)
-      audioRef.current.play().catch(e => {
-        console.log("Initial autoplay prevented, waiting for user interaction");
-      });
-      
-      // Set up interaction listeners as fallback
-      window.addEventListener('click', handleFirstInteraction);
-      window.addEventListener('touchstart', handleFirstInteraction);
-      
-      // Cleanup
-      return () => {
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current = null;
-        }
-        window.removeEventListener('click', handleFirstInteraction);
-        window.removeEventListener('touchstart', handleFirstInteraction);
-      };
-    }
   }, []);
 
   const handleCardOpen = (e) => {
@@ -87,14 +207,11 @@ export default function CelebrationPhase() {
     // Update the UI immediately
     setShowConfirmation(response);
     
-    // Try to play audio if not already playing
-    if (audioRef.current) {
-      try {
-        audioRef.current.muted = false;
-        await audioRef.current.play();
-      } catch (err) {
-        console.log("Audio playback error:", err);
-      }
+    // Trigger confetti for 'yes' response
+    if (response === 'yes') {
+      setShowConfetti(true);
+      // Auto-hide confetti after 5 seconds
+      setTimeout(() => setShowConfetti(false), 5000);
     }
     
     return false;
@@ -118,8 +235,6 @@ export default function CelebrationPhase() {
     }
   };
 
-  // Removed toggleMute function as per requirements
-
   // Create floating hearts for celebration
   const createHearts = () => {
     const hearts = [];
@@ -140,7 +255,6 @@ export default function CelebrationPhase() {
   };
 
   const [hearts] = useState(createHearts());
-  const [showReminderPopup, setShowReminderPopup] = useState(false);
 
   // Render different content based on user response
   const renderContent = () => {
@@ -188,7 +302,7 @@ export default function CelebrationPhase() {
             exit={{ opacity: 0 }}
           >
             <motion.div 
-              className="text-5xl mb-6"
+              className="text-5xl mb-6 font-cormorant"
               animate={{ 
                 scale: [1, 1.1, 1],
                 rotate: [0, 5, -5, 0]
@@ -203,7 +317,7 @@ export default function CelebrationPhase() {
             </motion.div>
             
             <motion.h2 
-              className="text-3xl md:text-4xl font-bold text-pink-100 mb-6"
+              className="text-3xl md:text-4xl font-bold text-pink-100 mb-6 font-cormorant"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -212,7 +326,7 @@ export default function CelebrationPhase() {
             </motion.h2>
             
             <motion.p 
-              className="text-pink-200 text-lg mb-8 leading-relaxed"
+              className="text-pink-200 text-lg mb-8 leading-relaxed font-lato"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
@@ -223,7 +337,7 @@ export default function CelebrationPhase() {
             </motion.p>
             
             <motion.p 
-              className="text-sm text-pink-300 italic mb-10"
+              className="text-sm text-pink-300 italic mb-10 font-lato"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.8 }}
               transition={{ delay: 0.8, duration: 0.8 }}
@@ -233,14 +347,14 @@ export default function CelebrationPhase() {
             
             <motion.button
               onClick={handleSendReminder}
-              whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.25)' }}
+              whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.25)', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
               whileTap={{ scale: 0.98 }}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm text-gray-900 px-8 py-3 rounded-full border border-white border-opacity-30 transition-all text-lg font-medium flex items-center mx-auto gap-2"
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm text-gray-900 px-8 py-3 rounded-full border border-white border-opacity-30 transition-all text-lg font-medium flex items-center mx-auto gap-2 font-lato"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
             >
-              Okey
+              Send me a reminder
               <span className="text-xl">→</span>
             </motion.button>
           </motion.div>
@@ -252,8 +366,13 @@ export default function CelebrationPhase() {
               className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 z-20"
             >
               <div className="bg-white rounded-xl p-6 max-w-sm text-center text-gray-800">
-                <p className="font-bold text-lg mb-4">You just said yes to trouble. 😏</p>
-                <p className="mb-6">I’ll plan something worthy of that answer.<br />Dress cute. I’ll handle the rest.</p>
+                <p className="font-bold text-lg mb-4 font-cormorant">I've got you.</p>
+                <p className="mb-4 font-lato">I’ll nudge you gently — just before our maybe-night-to-remember.</p>
+                <input
+                  type="email"
+                  placeholder="Your email (optional)"
+                  className="w-full mb-4 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
+                />
                 <button
                   onClick={() => setShowReminderPopup(false)}
                   className="mt-2 px-6 py-2 bg-pink-500 text-white rounded-full"
@@ -285,7 +404,7 @@ export default function CelebrationPhase() {
           </motion.div>
           
           <motion.h2 
-            className="text-2xl md:text-3xl font-bold text-pink-100 mb-6"
+            className="text-2xl md:text-3xl font-bold text-pink-100 mb-6 font-cormorant"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -294,7 +413,7 @@ export default function CelebrationPhase() {
           </motion.h2>
           
           <motion.p 
-            className="text-pink-200 mb-8 leading-relaxed text-lg"
+            className="text-pink-200 mb-8 leading-relaxed text-lg font-lato"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -312,10 +431,11 @@ export default function CelebrationPhase() {
             onClick={() => window.location.reload()}
             whileHover={{ 
               scale: 1.05,
-              backgroundColor: 'rgba(255, 255, 255, 0.1)'
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
             }}
             whileTap={{ scale: 0.98 }}
-            className="bg-white bg-opacity-5 hover:bg-opacity-10 backdrop-blur-sm text-white px-8 py-3 rounded-full border border-white border-opacity-20 transition-all text-lg font-medium"
+            className="bg-white bg-opacity-5 hover:bg-opacity-10 backdrop-blur-sm text-white px-8 py-3 rounded-full border border-white border-opacity-20 transition-all text-lg font-medium font-lato"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
@@ -332,6 +452,9 @@ export default function CelebrationPhase() {
         className={`relative cursor-pointer transition-all duration-700 ease-in-out transform ${isCardOpen ? 'rotate-0' : 'rotate-2 hover:rotate-0 hover:scale-105'}`}
         onClick={handleCardOpen}
         whileHover={!isCardOpen ? { scale: 1.02 } : {}}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <motion.div 
           className={`bg-gradient-to-br from-pink-50 to-purple-50 rounded-3xl p-8 shadow-2xl border-2 border-pink-200 transition-all ${isCardOpen ? 'scale-95' : 'scale-100'}`}
@@ -364,8 +487,8 @@ export default function CelebrationPhase() {
               >
                 <Heart className="w-16 h-16 text-pink-500 fill-pink-500/20" />
               </motion.div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">For You</h2>
-              <p className="text-gray-600">Tap to open your special message</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2 font-cormorant">For You</h2>
+              <p className="text-gray-600 font-lato">Tap to open your special message</p>
             </motion.div>
           ) : (
             <motion.div
@@ -379,13 +502,13 @@ export default function CelebrationPhase() {
                 <Sparkles className="w-8 h-8 text-yellow-400 animate-pulse" />
               </div>
               
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 font-cormorant text-shadow-sm">
                 Will You Go On A Date With Me?
               </h2>
               
               <div className="h-px bg-gradient-to-r from-transparent via-pink-300 to-transparent my-6" />
               
-              <div className="space-y-6 text-gray-700 leading-relaxed">
+              <div className="space-y-6 text-gray-700 leading-relaxed font-lato text-shadow-sm">
                 <p className="italic">
                   I've had this idea in my head...
                   <br />
@@ -403,19 +526,19 @@ export default function CelebrationPhase() {
               
               <div className="mt-8 space-y-4">
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.03, boxShadow: '0 10px 15px -3px rgba(215, 38, 56, 0.3), 0 4px 6px -2px rgba(215, 38, 56, 0.15)' }}
                   whileTap={{ scale: 0.98 }}
                   onClick={(e) => handleConfirmation('yes', e)}
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-6 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-6 rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 font-lato"
                 >
                   Yes, I'd love to! <Heart className="w-5 h-5" />
                 </motion.button>
                 
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.03, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
                   whileTap={{ scale: 0.98 }}
                   onClick={(e) => handleConfirmation('no', e)}
-                  className="w-full bg-white text-gray-700 py-3 px-6 rounded-full font-medium border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300"
+                  className="w-full bg-white text-gray-700 py-3 px-6 rounded-full font-medium border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300 font-lato"
                 >
                   Maybe another time
                 </motion.button>
@@ -425,13 +548,17 @@ export default function CelebrationPhase() {
         </motion.div>
         
         {/* Glow effect */}
-        <div className="pointer-events-none absolute -inset-1 bg-gradient-to-r from-pink-400 to-purple-500 rounded-3xl opacity-0 group-hover:opacity-30 blur-lg transition duration-300 group-hover:duration-500" />
+        <div className="pointer-events-none absolute -inset-1 bg-gradient-to-r from-pink-400 to-purple-500 rounded-3xl opacity-20 blur-lg transition duration-300 group-hover:opacity-30 group-hover:duration-500" />
       </motion.div>
     );
   };
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-[#1a001a] via-[#1B0032] to-[#2d0a42]">
+    <div className="fixed inset-0 overflow-hidden bg-gradient-to-br from-[#0A0011] to-[#300022]">
+      {/* Background Effects */}
+      {showHearts && <FloatingHearts />}
+      {showConfetti && <ConfettiTrigger trigger={showConfetti} />}
+      
       {/* Falling Petals */}
       <div className="absolute inset-0 overflow-hidden">
         {petals.map((petal) => (
@@ -468,18 +595,10 @@ export default function CelebrationPhase() {
         ))}
       </div>
 
-      {/* Audio Element - Auto-play */}
-      <audio ref={audioRef} loop autoPlay>
-        <source src="/romantic-instrumental.mp3" type="audio/mpeg" />
-        Your browser does not support the audio element.
-      </audio>
-      
-
-
       {/* Main Content */}
       <div className="relative h-full flex items-center justify-center p-4">
         <motion.div
-          className="w-full max-w-md mx-auto"
+          className="w-full"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -490,7 +609,7 @@ export default function CelebrationPhase() {
           {/* Signature - Only show on main card */}
           {!showConfirmation && (
             <motion.div 
-              className="mt-8 text-center text-pink-200 text-sm"
+              className="mt-8 text-center text-pink-200 text-sm font-lato"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.7 }}
               transition={{ delay: 1 }}
