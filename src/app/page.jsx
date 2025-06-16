@@ -41,8 +41,7 @@ export default function Home() {
 
   // Initialize audio
   useEffect(() => {
-    // Add timestamp to prevent caching
-    audioRef.current = new Audio(`/romantic-piano.mp3?t=${Date.now()}`)
+    audioRef.current = new Audio('/romantic-piano.mp3')
     audioRef.current.loop = true
     audioRef.current.volume = 0.1
 

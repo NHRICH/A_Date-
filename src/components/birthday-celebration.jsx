@@ -322,56 +322,40 @@ export default function CelebrationPhase() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              You just made my heart skip a beat. 💘
+              You just made my week.
             </motion.h2>
             
             <motion.p 
-              className="text-pink-200 text-xl mb-8 leading-relaxed font-cormorant italic"
+              className="text-pink-200 text-lg mb-8 leading-relaxed font-lato"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              You've just said yes to an unforgettable evening.
+              I'll plan something worthy of that yes.
               <br />
-              I promise to make it worth your while.
+              You'll hear from me soon.
             </motion.p>
             
             <motion.p 
-              className="text-base text-pink-300 font-medium mb-10 font-lato"
+              className="text-sm text-pink-300 italic mb-10 font-lato"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.9 }}
+              animate={{ opacity: 0.8 }}
               transition={{ delay: 0.8, duration: 0.8 }}
             >
-              Dress to impress, my love. 
-              <span className="block mt-2 text-pink-400">I'll take care of everything else.</span>
+              And I might even wear black — just to match your dark book plots.
             </motion.p>
             
             <motion.button
-              onClick={async (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                console.log('Button clicked, calling handleSendReminder');
-                await handleSendReminder();
-              }}
-              className="relative overflow-hidden group bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-8 rounded-full font-medium text-lg shadow-lg transition-all duration-300 mx-auto"
+              onClick={handleSendReminder}
+              whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.25)', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm text-gray-900 px-8 py-3 rounded-full border border-white border-opacity-30 transition-all text-lg font-medium flex items-center mx-auto gap-2 font-lato"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              whileHover={{
-                scale: 1.05,
-                boxShadow: '0 10px 25px -5px rgba(236, 72, 153, 0.4)',
-                background: 'linear-gradient(45deg, #ec4899, #8b5cf6)'
-              }}
-              whileTap={{ 
-                scale: 0.98,
-                boxShadow: '0 2px 10px -3px rgba(236, 72, 153, 0.5)'
-              }}
-              transition={{ 
-                duration: 0.3,
-                ease: 'easeInOut'
-              }}
+              transition={{ delay: 1 }}
             >
-              <span className="relative z-10">Send me a reminder</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></span>
+              click here♥ remind me u are coming  
+              <span className="text-xl">→</span>
             </motion.button>
           </motion.div>
           {showReminderPopup && (
@@ -379,48 +363,22 @@ export default function CelebrationPhase() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-[100] p-4"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowReminderPopup(false);
-              }}
+              className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 z-20"
             >
-              <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-8 max-w-md text-center shadow-2xl border border-pink-200">
-                <motion.div 
-                  className="text-4xl mb-4"
-                  animate={{ 
-                    scale: [1, 1.05, 1],
-                    rotate: [0, 5, -5, 0]
-                  }}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity,
-                    ease: 'easeInOut'
-                  }}
-                >
-                  💌
-                </motion.div>
-                <h3 className="text-2xl font-bold text-pink-600 mb-3 font-cormorant">Consider it done</h3>
-                <p className="text-gray-700 mb-6 leading-relaxed font-lato">
-                  I'll send you all the magical details soon.
-                  <br />
-                  <span className="text-pink-500 font-medium">Get ready for an evening that's as special as you are.</span>
-                </p>
-                <div className="mb-6">
-                  <input
-                    type="email"
-                    placeholder="Your email (optional)"
-                    className="w-full px-4 py-3 border border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent transition-all duration-200"
-                  />
-                </div>
-                <motion.button
+              <div className="bg-white rounded-xl p-6 max-w-sm text-center text-gray-800">
+                <p className="font-bold text-2xl mb-4 font-cormorant text-pink-600">You just said yes to trouble. 😏</p>
+                <p className="mb-4 font-lato text-gray-700">I'll plan something worthy of that answer. Dress cute. I'll handle the rest.</p>
+                <input
+                  type="email"
+                  placeholder="Your email (optional)"
+                  className="w-full mb-4 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
+                />
+                <button
                   onClick={() => setShowReminderPopup(false)}
-                  whileHover={{ scale: 1.03, boxShadow: '0 10px 15px -3px rgba(215, 38, 56, 0.2)' }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 px-6 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 font-lato"
+                  className="mt-2 px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full hover:opacity-90 transition-opacity"
                 >
-                  Can't wait! 😊
-                </motion.button>
+                  Can't Wait
+                </button>
               </div>
             </motion.div>
           )}
