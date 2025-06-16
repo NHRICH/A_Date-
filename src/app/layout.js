@@ -1,4 +1,5 @@
 import "./globals.css";
+import HeartsOverlay from "@/components/HeartsOverlay";
 
 export const metadata = {
   title: "A Special Invitation",
@@ -30,7 +31,8 @@ export default function RootLayout({ children }) {
           }
         `}</style>
       </head>
-      <body>
+      <body className="relative">
+        <HeartsOverlay />
         {children}
         {/* Bottom-left logo/link */}
         <a

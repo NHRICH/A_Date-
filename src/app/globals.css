@@ -54,3 +54,18 @@ body {
 .font-lato {
   font-family: 'Lato', sans-serif;
 }
+
+/* Floating heart animation */
+@keyframes float-up {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-120vh) rotate(360deg);
+    opacity: 0;
+  }
+}
