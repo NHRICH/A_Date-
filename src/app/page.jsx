@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Heart, Coffee, Sparkles, Loader2, Volume2, VolumeX } from "lucide-react"
+import ReminderConfirmationPopup from "@/components/ReminderConfirmationPopup";
 
 // Phases
 const PHASES = {
@@ -342,9 +343,10 @@ export default function Home() {
   // Render celebration phase
   if (currentPhase === PHASES.CELEBRATION) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black to-purple-900 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
-        {/* Confetti effect */}
-        {Array.from({ length: 50 }).map((_, i) => (
+      <>
+        <div className="min-h-screen bg-gradient-to-br from-black to-purple-900 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
+          {/* Confetti effect */}
+          {Array.from({ length: 50 }).map((_, i) => (
           <motion.div
             key={i}
             className="absolute"
@@ -433,7 +435,12 @@ export default function Home() {
             Send me a reminder
           </motion.button>
         </motion.div>
-      </div>
+        </div>
+        <ReminderConfirmationPopup
+          isOpen={showReminder}
+          onClose={() => setShowReminder(false)}
+        />
+      </>
     )
   }
 
